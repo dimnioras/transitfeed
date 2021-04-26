@@ -1,6 +1,7 @@
-#!/usr/bin/python2.5
+#!/usr/bin/python3.9
 
-# Copyright (C) 2009 Google Inc.
+# Copyright (C) 2007 Google Inc.
+# Copyright (C) 2021 Dimitris Nioras
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function
-from __future__ import absolute_import
+#from __future__ import print_function
+#from __future__ import absolute_import
 import codecs
 import csv
 import datetime
@@ -26,7 +27,7 @@ import re
 import socket
 import sys
 import time
-import urllib2
+import requests
 
 from . import errors
 from .version import __version__
@@ -110,7 +111,7 @@ or an email to the public group transitfeed@googlegroups.com. Sorry!
     print(apology)
 
     try:
-      raw_input('Press enter to continue...')
+      input('Press enter to continue...')
     except EOFError:
       # Ignore stdin being closed. This happens during some tests.
       pass
@@ -190,25 +191,25 @@ def CheckVersion(problems, latest_version=None):
   if not latest_version:
     timeout = 20
     socket.setdefaulttimeout(timeout)
-    request = urllib2.Request(LATEST_RELEASE_VERSION_URL)
+    r = requests.get(LATEST_RELEASE_VERSION_URL)
 
     try:
-      response = urllib2.urlopen(request)
-      content = response.read()
-      m = re.search(r'version=(\d+\.\d+\.\d+)', content)
+      #response = urllib2.urlopen(r)
+      #content = response.read()
+      m = re.search(r'version=(\d+\.\d+\.\d+)', r.text)
       if m:
         latest_version = m.group(1)
 
-    except urllib2.HTTPError as e:
+    except requests.HTTPError as e:
       description = ('During the new-version check, we failed to reach '
                      'transitfeed server: Reason: %s [%s].' %
-                     (e.reason, e.code))
+                     (e.response.reason, e.response.status_code))
       problems.OtherProblem(
         description=description, type=errors.TYPE_NOTICE)
       return
-    except urllib2.URLError as e:
+    except requests.ConnectionError as e:
       description = ('During the new-version check, we failed to reach '
-                     'transitfeed server. Reason: %s.' % e.reason)
+                     'transitfeed server. Reason: %s.' % e.response.reason)
       problems.OtherProblem(
         description=description, type=errors.TYPE_NOTICE)
       return
@@ -432,7 +433,7 @@ def ColorLuminance(color):
   return (299*r + 587*g + 114*b) / 1000.0
 
 def IsValidYesNoUnknown(value):
-  return value in ['0', '1', '2'];
+  return value in ['0', '1', '2']
 
 def ValidateYesNoUnknown(value, column_name=None, problems=None):
   """Validates a value "0" for uknown, "1" for yes, and "2" for no."""
@@ -444,7 +445,7 @@ def ValidateYesNoUnknown(value, column_name=None, problems=None):
     return False
 
 def IsEmpty(value):
-  return value is None or (isinstance(value, basestring) and not value.strip())
+  return value is None or (isinstance(value, str) and not value.strip())
 
 def FindUniqueId(dic):
   """Return a string not used as a key in the dictionary dic"""
@@ -473,7 +474,7 @@ def FormatSecondsSinceMidnight(s):
 def DateStringToDateObject(date_string):
   """Return a date object for a string "YYYYMMDD"."""
   # If this becomes a bottleneck date objects could be cached
-  if re.match('^\d{8}$', date_string) == None:
+  if re.match(r'^\d{8}$', date_string) == None:
     return None
   try:
     return datetime.date(int(date_string[0:4]), int(date_string[4:6]),
@@ -551,7 +552,7 @@ class CsvUnicodeWriter:
     utf-8."""
     encoded_row = []
     for s in row:
-      if isinstance(s, unicode):
+      if isinstance(s, str):
         encoded_row.append(s.encode("utf-8"))
       else:
         encoded_row.append(s)
@@ -592,7 +593,7 @@ class EndOfLineChecker:
 
     Args:
       f: file-like object to wrap
-      name: name to use for f. StringIO objects don't have a name attribute.
+      name: name to use for f. BytesIO objects don't have a name attribute.
       problems: a ProblemReporterBase object
     """
     self._f = f
@@ -607,10 +608,10 @@ class EndOfLineChecker:
   def __iter__(self):
     return self
 
-  def next(self):
+  def __next__(self):
     """Return next line without end of line marker or raise StopIteration."""
     try:
-      next_line = next(self._f)
+      next_line = next(self._f).decode('utf-8')
     except StopIteration:
       self._FinalCheck()
       raise

@@ -1,6 +1,7 @@
-#!/usr/bin/python2.5
+#!/usr/bin/python3.9
 
 # Copyright (C) 2007 Google Inc.
+# Copyright (C) 2021 Dimitris Nioras
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
+#from __future__ import absolute_import
 import warnings
 
 from .gtfsobjectbase import GtfsObjectBase
@@ -423,7 +424,7 @@ class Trip(GtfsObjectBase):
     if start_time == None or start_time == '':  # 0 is OK
       problem_reporter.MissingValue('start_time')
       return
-    if isinstance(start_time, basestring):
+    if isinstance(start_time, str):
       try:
         start_time = util.TimeToSecondsSinceMidnight(start_time)
       except problems_module.Error:
@@ -435,7 +436,7 @@ class Trip(GtfsObjectBase):
     if end_time == None or end_time == '':
       problem_reporter.MissingValue('end_time')
       return
-    if isinstance(end_time, basestring):
+    if isinstance(end_time, str):
       try:
         end_time = util.TimeToSecondsSinceMidnight(end_time)
       except problems_module.Error:
@@ -477,8 +478,8 @@ class Trip(GtfsObjectBase):
       return (self.trip_id,
               util.FormatSecondsSinceMidnight(headway[0]),
               util.FormatSecondsSinceMidnight(headway[1]),
-              unicode(headway[2]),
-              unicode(headway[3]))
+              headway[2],
+              headway[3])
 
   def GetFrequencyOutputTuples(self):
     tuples = []

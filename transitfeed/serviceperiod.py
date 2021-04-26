@@ -1,6 +1,7 @@
-#!/usr/bin/python2.5
+#!/usr/bin/python3.9
 
 # Copyright (C) 2007 Google Inc.
+# Copyright (C) 2021 Dimitris Nioras
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
+#from __future__ import absolute_import
 import datetime
 import re
 import time
@@ -113,7 +114,7 @@ class ServicePeriod(object):
     """Generates tuples of calendar_dates.txt values. Yield zero tuples if
     this ServicePeriod should not be in calendar_dates.txt ."""
     for date, (exception_type, _) in self.date_exceptions.items():
-      yield (self.service_id, date, unicode(exception_type))
+      yield (self.service_id, date, exception_type)
 
   def GetCalendarDatesFieldValuesTuples(self):
     """Return a list of date execeptions"""

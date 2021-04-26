@@ -1,6 +1,7 @@
-#!/usr/bin/python2.5
+#!/usr/bin/python3.9
 
-# Copyright (C) 2010 Google Inc.
+# Copyright (C) 2007 Google Inc.
+# Copyright (C) 2021 Dimitris Nioras
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
+#from __future__ import absolute_import
 from .agency import Agency
 from .fareattribute import FareAttribute
 from .farerule import FareRule
@@ -128,7 +129,7 @@ class GtfsFactory(object):
     """Returns a list of filenames sorted by loading order.
     Only includes files that Loader's standardized loading knows how to load"""
     result = {}
-    for filename, mapping in self._file_mapping.iteritems():
+    for filename, mapping in self._file_mapping.items():
       loading_order = mapping['loading_order']
       if loading_order is not None:
         result[loading_order] = filename

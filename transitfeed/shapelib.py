@@ -1,6 +1,7 @@
-#!/usr/bin/python2.4
-#
-# Copyright 2007 Google Inc. All Rights Reserved.
+#!/usr/bin/python3.9
+
+# Copyright (C) 2007 Google Inc.
+# Copyright (C) 2021 Dimitris Nioras
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +29,7 @@ are relatively close together on the surface of the earth, this
 is adequate; for other purposes, this library may not be accurate
 enough.
 """
-from __future__ import print_function
+#from __future__ import print_function
 
 __author__ = 'chris.harrelson.code@gmail.com (Chris Harrelson)'
 
@@ -61,7 +62,7 @@ class Point(object):
     if not isinstance(other, Point):
       raise TypeError('Point.__cmp__(x,y) requires y to be a "Point", '
                       'not a "%s"' % type(other).__name__)
-    return cmp((self.x, self.y, self.z), (other.x, other.y, other.z))
+    return ((self.x, self.y, self.z) > (other.x, other.y, other.z)) - ((self.x, self.y, self.z) < (other.x, other.y, other.z))
 
   def __str__(self):
     return "(%.15f, %.15f, %.15f) " % (self.x, self.y, self.z)

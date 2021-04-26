@@ -681,7 +681,7 @@ https://github.com/google/transitfeed/wiki/FeedValidator
 
   if not len(args) == 1:
     if options.manual_entry:
-      feed = raw_input('Enter Feed Location: ')
+      feed = input('Enter Feed Location: ')
     else:
       parser.error('You must provide the path of a single feed')
   else:

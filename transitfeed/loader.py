@@ -1,6 +1,7 @@
-#!/usr/bin/python2.5
+#!/usr/bin/python3.9
 
 # Copyright (C) 2007 Google Inc.
+# Copyright (C) 2021 Dimitris Nioras
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
+#from __future__ import absolute_import
 import codecs
 import csv
 import os
@@ -24,7 +25,7 @@ import zipfile
 from . import gtfsfactoryuser
 from . import problems
 from . import util
-from .compat import StringIO
+from io import StringIO, BytesIO
 
 class Loader:
   def __init__(self,
@@ -74,7 +75,7 @@ class Loader:
       assert not self._path
       return True
 
-    if not isinstance(self._path, basestring) and hasattr(self._path, 'read'):
+    if not isinstance(self._path, str) and hasattr(self._path, 'read'):
       # A file-like object, used for testing with a StringIO file
       self._zip = zipfile.ZipFile(self._path, mode='r')
       return True
@@ -128,7 +129,7 @@ class Loader:
       # Convert and continue, so we can find more errors
       contents = codecs.getdecoder('utf-16')(contents)[0].encode('utf-8')
 
-    null_index = contents.find('\0')
+    null_index = contents.find(0)
     if null_index != -1:
       # It is easier to get some surrounding text than calculate the exact
       # row_num
@@ -152,7 +153,7 @@ class Loader:
     if not contents:
       return
 
-    eol_checker = util.EndOfLineChecker(StringIO(contents),
+    eol_checker = util.EndOfLineChecker(BytesIO(contents),
                                    file_name, self._problems)
     # The csv module doesn't provide a way to skip trailing space, but when I
     # checked 15/675 feeds had trailing space in a header row and 120 had spaces
@@ -254,7 +255,8 @@ class Loader:
       unicode_error_columns = []  # index of valid_values elements with an error
       for i in valid_columns:
         try:
-          valid_values.append(raw_row[i].decode('utf-8'))
+          #valid_values.append(raw_row[i].decode('utf-8'))
+          valid_values.append(raw_row[i])
         except UnicodeDecodeError:
           # Replace all invalid characters with REPLACEMENT CHARACTER (U+FFFD)
           valid_values.append(codecs.getdecoder("utf8")
@@ -287,12 +289,11 @@ class Loader:
     if not contents:
       return
 
-    eol_checker = util.EndOfLineChecker(StringIO(contents),
-                                   file_name, self._problems)
+    eol_checker = util.EndOfLineChecker(BytesIO(contents),file_name, self._problems)
     reader = csv.reader(eol_checker)  # Use excel dialect
 
     header = next(reader)
-    header = map(lambda x: x.strip(), header)  # trim any whitespace
+    header = list(map(lambda x: x.strip(), header))  # trim any whitespace
     header_occurrences = util.defaultdict(lambda: 0)
     for column_header in header:
       header_occurrences[column_header] += 1
@@ -355,10 +356,11 @@ class Loader:
         ci = col_index[i]
         if ci >= 0:
           if len(row) <= ci:  # handle short CSV rows
-            result[i] = u''
+            result[i] = ''
           else:
             try:
-              result[i] = row[ci].decode('utf-8').strip()
+              #result[i] = row[ci].decode('utf-8').strip()
+              result[i] = row[ci].strip()
             except UnicodeDecodeError:
               # Replace all invalid characters with
               # REPLACEMENT CHARACTER (U+FFFD)
@@ -520,9 +522,16 @@ class Loader:
       shape.AddShapePointObjectUnsorted(shapepoint, self._problems)
       self._problems.ClearContext()
 
-    for shape_id, shape in shapes.items():
+    # old loop
+    '''for shape_id, shape in shapes.items():
+      print(shape_id)
+      print(shape)
       self._schedule.AddShapeObject(shape, self._problems)
-      del shapes[shape_id]
+      del shapes[shape_id]'''
+    
+    for shape in list(shapes):
+      self._schedule.AddShapeObject(shapes[shape], self._problems)
+      #del shapes[shape]
 
   def _LoadStopTimes(self):
     stop_time_class = self._gtfs_factory.StopTime
